@@ -11,19 +11,19 @@ void spiInit( void ) {
   while( GCLK->STATUS.bit.SYNCBUSY ) { }
   //structures to configure the SERCOM1 peripheral
   const SERCOM_SPI_CTRLA_Type ctrla = {
-    .bit.DORD = ??, // MSB first
-    .bit.CPHA = ??, // Mode 0
-    .bit.CPOL = ??,
-    .bit.FORM = ??, // SPI frame
-    .bit.DIPO = ??, // MISO on PAD[3]
-    .bit.DOPO = ??, // MOSI on PAD[0], SCK on PAD[1], SS_ on PAD[2]
-    .bit.MODE = ?? // Master Mode
+    .bit.DORD = 0, // MSB first
+    .bit.CPHA = 0, // Mode 0
+    .bit.CPOL = 0,
+    .bit.FORM = 10, // SPI frame
+    .bit.DIPO = 0x3, // MISO on PAD[3]
+    .bit.DOPO = 0x0, // MOSI on PAD[0], SCK on PAD[1], SS_ on PAD[2]
+    .bit.MODE = 0x3 // Master Mode
   };
   SERCOM1->SPI.CTRLA.reg = ctrla.reg;
   const SERCOM_SPI_CTRLB_Type ctrlb = {
-    .bit.RXEN = ??, // RX enabled
-    .bit.MSSEN = ??, // Manual SC
-    .bit.CHSIZE = ?? // 8-bit
+    .bit.RXEN = 1 // RX enabled
+    .bit.MSSEN = 0 // Manual SC
+    .bit.CHSIZE = 0 // 8-bit
   };
   SERCOM1->SPI.CTRLB.reg = ctrlb.reg;
   //Formula to configure the desired baudrate
@@ -49,12 +49,11 @@ void spiInit( void ) {
 
 uint8_t spiSend( uint8_t data ) {
   uint8_t temp;
-  while( ?? ) { } //wait until buffer is empty
-  ?? = SERCOM_SPI_DATA_DATA( data ); //transmit data
-  while( ?? ) { } //wait until a data is received
-  temp = ??; //read data
-  while( !SERCOM1->SPI.INTFLAG.bit.TXC ) { } //wait until 
-  there is no data to transmit
+  while(!SERCOM1->SPI.INTFLAG.bit.DRE) { } //wait until buffer is empty
+  SERCOM1->SPI.DATA.reg = SERCOM_SPI_DATA_DATA( data ); //transmit data
+  while( !SERCOM1->SPI.INTFLAG.bit.RXC ) { } //wait until a data is received
+  temp = SERCOM1->SPI.DATA.reg; //read data
+  while( !SERCOM1->SPI.INTFLAG.bit.TXC ) { } //wait until there is no data to transmit
   myprintf( " %x", temp ); //printf the value in putty
   return temp;
 }
@@ -66,11 +65,9 @@ int main(void)
   volatile uint8_t rData;
   volatile uint8_t sData = 85;
   while (1) {
-    REG_PORT_OUTCLR0 = PORT_PA18; //initiate transaction by 
-    SS_low
+    REG_PORT_OUTCLR0 = PORT_PA18; //initiate transaction by SS_low
     rData = spiSend( sData );
-    REG_PORT_OUTSET0 = PORT_PA18; //finish transaction by 
-    SS_high
+    REG_PORT_OUTSET0 = PORT_PA18; //finish transaction by SS_high
   }
 }
 
