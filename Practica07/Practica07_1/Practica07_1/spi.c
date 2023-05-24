@@ -138,8 +138,8 @@ int main(void)
 	myprintf("\nStart Communication");
 	myprintf("\nSending 0x00");
 	spiXchg( CMD00, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
-	//myprintf("\nSending 0x08");
-	//spiXchg( CMD08, SIZE_SD_CMD, RxBuffer );
+	myprintf("\nSending 0x08");
+	spiXchg( CMD08, SIZE_SD_CMD, RxBuffer );
 
 	myprintf("\nDone");
 }
@@ -161,8 +161,7 @@ void UARTInit(void) {
 	PORT->Group[0].PMUX[5].reg |= 0x20;                   /* Selecting peripheral function C */
 	
 	/* APBCMASK */
-	//PM->APBCMASK.reg |= PM_APBCMASK_SERCOM0;			  /* SERCOM 0 enable*/
-	PM->APBCMASK.reg |= PM_APBCMASK_SERCOM0;
+	PM->APBCMASK.reg |= PM_APBCMASK_SERCOM0;			  /* SERCOM 0 enable*/
 
 	/*GCLK configuration for sercom0 module: using generic clock generator 0, ID for sercom0, enable GCLK*/
 
