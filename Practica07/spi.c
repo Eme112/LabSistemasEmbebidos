@@ -101,8 +101,8 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
   // Reading to find the beginning of the sector
   temp = spiSend(0xFF);
   while(temp != 0xFE){
-  temp = spiSend(0xFF);
-  myprintf(" %x", temp);
+    temp = spiSend(0xFF);
+    myprintf(" %x", temp);
   }
   // Receiving the memory sector/block
   myprintf("\n\n");
@@ -116,7 +116,7 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
     myprintf(" %x", temp);
   }
   REG_PORT_OUTSET0 = PORT_PA18;
-myprintf("\n\n");
+  myprintf("\n\n");
 }
 
 
@@ -207,11 +207,9 @@ int main(void)
 
 
 	myprintf("\nStart Communication");
-	myprintf("\nSending 0x00");
-	spiXchg( CMD00, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
-	myprintf("\nSending 0x08");
-	spiXchg( CMD08, SIZE_SD_CMD, RxBuffer );
-
+  initSD();
+  myprintf("\nSD Card Initialized");
+  // rcvr_datablock(CMD17, 0x00000000, RxBuffer, 512);
 	myprintf("\nDone");
 }
 
