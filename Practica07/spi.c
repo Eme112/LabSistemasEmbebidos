@@ -165,7 +165,10 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
   temp = spiSend(temp);
   myprintf(" %x", temp);
 
-
+  if (temp != 0x00) {
+    myprintf("\nError in CMD17 ... Retrying");
+    rcvr_datablock(send_buff, lba, receive_buff, bs);
+  }
 
   // Reading to find the beginning of the sector
   temp = spiSend(0xFF);
