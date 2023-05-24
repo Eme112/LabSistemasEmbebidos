@@ -12,7 +12,7 @@
 #define kCMD55 0x77
 #define kCMD41 0x69
 const uint8_t CMD00[SIZE_SD_CMD] ={0x40, 0x00, 0x00, 0x00, 0x00, 0x95};
-const uint8_t CMD08[SIZE_SD_CMD] ={0x48, 0x00, 0x00, 0x01, 0xAA, 0x0F};
+const uint8_t CMD08[SIZE_SD_CMD] ={0x48, 0x00, 0x00, 0x01, 0xAA, 0x87};
 uint8_t CMD17[SIZE_SD_CMD] ={0x51, 0x00, 0x00, 0x00, 0x00, 0x01};
 uint8_t CMD172[SIZE_SD_CMD] ={0x51, 0x00, 0x00, 0x08, 0x00, 0x01};
 const uint8_t CMD18[SIZE_SD_CMD] ={0x52, 0x00, 0x00, 0x00, 0x00, 0x01};
@@ -81,6 +81,17 @@ void initCycles(void){
 	REG_PORT_OUTSET0 = PORT_PA18;
 	for(i=0;i<77;i++)
 	spiSend(0xFF);
+}
+
+void initSD() {
+	//uint32_t response = 0xFF;
+
+	// 1. CMD0
+	spiXchg( CMD00, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
+	// 2. CMD8
+	spiXchg( CMD08, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
+	// If illegal, send CMD58
+	spiXchg( CMD08, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
 }
 
 uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff ) {
