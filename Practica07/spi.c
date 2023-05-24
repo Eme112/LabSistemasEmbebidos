@@ -73,7 +73,7 @@ uint8_t spiSend( uint8_t data ) {
   while( !SERCOM1->SPI.INTFLAG.bit.RXC ) { } //wait until a data is received
   temp = SERCOM1->SPI.DATA.reg; //read data
   while( !SERCOM1->SPI.INTFLAG.bit.TXC ) { } //wait until there is no data to transmit
-  // myprintf( " %x", temp ); //printf the value in putty
+  myprintf( "R: %x", temp ); //printf the value in putty
   return temp;
 }
 
