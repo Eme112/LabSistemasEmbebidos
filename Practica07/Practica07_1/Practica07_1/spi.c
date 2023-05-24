@@ -86,7 +86,7 @@ void initCycles(void){
 void initSD() {
 	//uint32_t response = 0xFF;
 
-	// 1. CMD0
+	// 1. CMD0.
 	spiXchg( CMD00, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
 	// 2. CMD8
 	spiXchg( CMD08, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
