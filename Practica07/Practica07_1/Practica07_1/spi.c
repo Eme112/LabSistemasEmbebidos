@@ -140,13 +140,36 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
 	temp = send_buff[0];
 	temp = spiSend(temp);
 	myprintf(" %x", temp);
+
+
 	temp = ((uint8_t*)&lba)[3];
 	temp = spiSend(temp);
 	myprintf(" %x", temp);
-	// Complete the code that is missing
+
+
+	temp = ((uint8_t*)&lba)[2];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
+
+
+	temp = ((uint8_t*)&lba)[1];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
+
+
+	temp = ((uint8_t*)&lba)[0];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
+
 	temp = send_buff[5];
 	temp = spiSend(temp);
 	myprintf(" %x", temp);
+
+	if (temp != 0x00) {
+		myprintf("\nError in CMD17 ... Retrying");
+		rcvr_datablock(send_buff, lba, receive_buff, bs);
+	}
+
 	// Reading to find the beginning of the sector
 	temp = spiSend(0xFF);
 	while(temp != 0xFE){

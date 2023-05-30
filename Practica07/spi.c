@@ -90,7 +90,7 @@ uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff 
 		myprintf("\nR1 = ");
 		for(i=0; i<LENGTH_R1; i++) {
 			temp = spiSend(0xFF);
-      receive_buff[i] = temp;
+			receive_buff[i] = temp;
 			myprintf(" %x", temp);
 		}
 		break;
@@ -98,14 +98,14 @@ uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff 
 		myprintf("\nR7 = ");
 		for(i=0; i<LENGTH_R7; i++) {
 			temp = spiSend(0xFF);
-      receive_buff[i] = temp;
+			receive_buff[i] = temp;
 			myprintf(" %x", temp);
 		}
 		break;
 		case kCMD41 :
 		for(i=0; i<LENGTH_R1-1; i++) {
 			temp = spiSend(0xFF);
-      receive_buff[i] = temp;
+			receive_buff[i] = temp;
 			myprintf(" %x", temp);
 		}
 		spiSend(0xFF);
@@ -113,7 +113,7 @@ uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff 
 		case kCMD55 :
 		for(i=0; i<LENGTH_R1; i++) {
 			temp = spiSend(0xFF);
-      receive_buff[i] = temp;
+			receive_buff[i] = temp;
 			myprintf(" %x", temp);
 		}
 		break;
@@ -133,94 +133,94 @@ void initCycles(void){
 }
 
 void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_buff, uint32_t bs ) {
-  uint8_t temp = 0xFF;
-  uint32_t i;
-  REG_PORT_OUTCLR0 = PORT_PA18;
-  myprintf("\n\n");
-  temp = send_buff[0];
-  temp = spiSend(temp);
-  myprintf(" %x", temp);
+	uint8_t temp = 0xFF;
+	uint32_t i;
+	REG_PORT_OUTCLR0 = PORT_PA18;
+	myprintf("\n\n");
+	temp = send_buff[0];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
 
 
-  temp = ((uint8_t*)&lba)[3];
-  temp = spiSend(temp);
-  myprintf(" %x", temp);
+	temp = ((uint8_t*)&lba)[3];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
 
 
-  temp = ((uint8_t*)&lba)[2];
-  temp = spiSend(temp);
-  myprintf(" %x", temp);
+	temp = ((uint8_t*)&lba)[2];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
 
 
-  temp = ((uint8_t*)&lba)[1];
-  temp = spiSend(temp);
-  myprintf(" %x", temp);
+	temp = ((uint8_t*)&lba)[1];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
 
 
-  temp = ((uint8_t*)&lba)[0];
-  temp = spiSend(temp);
-  myprintf(" %x", temp);
+	temp = ((uint8_t*)&lba)[0];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
 
-  temp = send_buff[5];
-  temp = spiSend(temp);
-  myprintf(" %x", temp);
+	temp = send_buff[5];
+	temp = spiSend(temp);
+	myprintf(" %x", temp);
 
-  if (temp != 0x00) {
-    myprintf("\nError in CMD17 ... Retrying");
-    rcvr_datablock(send_buff, lba, receive_buff, bs);
-  }
+	if (temp != 0x00) {
+		myprintf("\nError in CMD17 ... Retrying");
+		rcvr_datablock(send_buff, lba, receive_buff, bs);
+	}
 
-  // Reading to find the beginning of the sector
-  temp = spiSend(0xFF);
-  while(temp != 0xFE){
-    temp = spiSend(0xFF);
-    myprintf(" %x", temp);
-  }
-  // Receiving the memory sector/block
-  myprintf("\n\n");
-  for(i=0; i< bs; i++) {
-    while(SERCOM1->SPI.INTFLAG.bit.DRE == 0);
-    SERCOM1->SPI.DATA.reg = 0xFF;
-    while(SERCOM1->SPI.INTFLAG.bit.TXC == 0);
-    while(SERCOM1->SPI.INTFLAG.bit.RXC == 0);
-    temp = SERCOM1->SPI.DATA.reg;
-    *(receive_buff++) = temp;
-    myprintf(" %x", temp);
-  }
-  REG_PORT_OUTSET0 = PORT_PA18;
-  myprintf("\n\n");
+	// Reading to find the beginning of the sector
+	temp = spiSend(0xFF);
+	while(temp != 0xFE){
+		temp = spiSend(0xFF);
+		myprintf(" %x", temp);
+	}
+	// Receiving the memory sector/block
+	myprintf("\n\n");
+	for(i=0; i< bs; i++) {
+		while(SERCOM1->SPI.INTFLAG.bit.DRE == 0);
+		SERCOM1->SPI.DATA.reg = 0xFF;
+		while(SERCOM1->SPI.INTFLAG.bit.TXC == 0);
+		while(SERCOM1->SPI.INTFLAG.bit.RXC == 0);
+		temp = SERCOM1->SPI.DATA.reg;
+		*(receive_buff++) = temp;
+		myprintf(" %x", temp);
+	}
+	REG_PORT_OUTSET0 = PORT_PA18;
+	myprintf("\n\n");
 }
 
 
 void initSD() {
 	// CMD0.
-  int DESFASE = 1;
+	int DESFASE = 1;
 	spiXchg( CMD00, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
-  if (RxBuffer[DESFASE + 0] != 0x01) {
-    myprintf("\nError in CMD0 ... Retrying");
-    initSD();
-  }
+	if (RxBuffer[DESFASE + 0] != 0x01) {
+		myprintf("\nError in CMD0 ... Retrying");
+		initSD();
+	}
 	// CMD8
 	spiXchg( CMD08, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
-  if (RxBuffer[DESFASE + 0] != 0x01 && RxBuffer[DESFASE + 0] != 0x05) {
-    myprintf("\nError in CMD8 bit 0");
-  }
-  // Voltage Validation && Check Pattern
-  if (RxBuffer[DESFASE + 4] != 0xAA && RxBuffer[DESFASE + 3] != 0x01) {
-    myprintf("\nError in Voltage && Pattern");
-  }
-  // Is Card Ready?
-  uint8_t ready = 0x01;
-  while (ready != 0x00)
-  {
-    // CMD55
-    spiXchg( CMD55, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
-    // CMD41
-    spiXchg( CMD41, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
-    ready = RxBuffer[DESFASE + 0];
-    myprintf("\nCard not ready");
-  }
-  myprintf("\nCard Ready");
+	if (RxBuffer[DESFASE + 0] != 0x01 && RxBuffer[DESFASE + 0] != 0x05) {
+		myprintf("\nError in CMD8 bit 0");
+	}
+	// Voltage Validation && Check Pattern
+	if (RxBuffer[DESFASE + 4] != 0xAA && RxBuffer[DESFASE + 3] != 0x01) {
+		myprintf("\nError in Voltage && Pattern");
+	}
+	// Is Card Ready?
+	uint8_t ready = 0x01;
+	while (ready != 0x00)
+	{
+		// CMD55
+		spiXchg( CMD55, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
+		// CMD41
+		spiXchg( CMD41, SIZE_SD_CMD, RxBuffer ); /* reset instruction */
+		ready = RxBuffer[DESFASE + 0];
+		myprintf("\nCard not ready");
+	}
+	myprintf("\nCard Ready");
 }
 
 int main(void)
@@ -232,9 +232,9 @@ int main(void)
 
 
 	myprintf("\nStart Communication");
-  initSD();
-  myprintf("\nSD Card Initialized");
-  rcvr_datablock(CMD17, 0x00000000, RxBuffer, 512);
+	initSD();
+	myprintf("\nSD Card Initialized");
+	rcvr_datablock(CMD17, 0x00000000, RxBuffer, 512);
 	myprintf("\nDone");
 }
 
