@@ -18,6 +18,7 @@ uint8_t CMD172[SIZE_SD_CMD] ={0x51, 0x00, 0x00, 0x08, 0x00, 0x01};
 const uint8_t CMD18[SIZE_SD_CMD] ={0x52, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t CMD55[SIZE_SD_CMD] ={0x77, 0x00, 0x00, 0x00, 0x00, 0x65};
 const uint8_t CMD41[SIZE_SD_CMD] = {0x69, 0x40, 0x00, 0x00, 0x00, 0x77};
+const uint8_t CMD58[SIZE_SD_CMD] = {0x7A, 0x00, 0x00, 0x00, 0x00, 0x75};
 uint8_t RxBuffer[RXBUFSIZE];
 
 void spiInit( void ) {
@@ -165,18 +166,21 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
 	temp = spiSend(temp);
 	myprintf(" %x", temp);
 
+	myprintf("\n Reading Data:");
 	if (temp != 0x00) {
 		myprintf("\nError in CMD17 ... Retrying");
 		rcvr_datablock(send_buff, lba, receive_buff, bs);
 	}
 
 	// Reading to find the beginning of the sector
+	myprintf("\n Waiting for the beginning of the sector:")
 	temp = spiSend(0xFF);
 	while(temp != 0xFE){
 		temp = spiSend(0xFF);
 		myprintf(" %x", temp);
 	}
 	// Receiving the memory sector/block
+	myprintf("\n Reading Data:");
 	myprintf("\n\n");
 	for(i=0; i< bs; i++) {
 		while(SERCOM1->SPI.INTFLAG.bit.DRE == 0);
@@ -221,6 +225,14 @@ void initSD() {
 		myprintf("\nCard not ready");
 	}
 	myprintf("\nCard Ready");
+
+	spiXchg(CMD58, SIZE_SD_CMD, RxBuffer);
+	if(RxBuffer[3] & 0x40){
+		myprintf("High Capacity Card \n");
+	}
+	else{
+		myprintf("Standard Capacity Card \n");
+	}
 }
 
 int main(void)
