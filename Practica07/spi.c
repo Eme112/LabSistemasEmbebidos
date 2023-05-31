@@ -2,8 +2,10 @@
 #include "myprintf.h"
 #include "spi.h"
 
-#define RXBUFSIZE 0x400
+#define RXBUFSIZE 0x07
+#define SIZE_SD_RD 512
 #define LENGTH_R1 0x03
+#define LENGTH_R3 0x05
 #define LENGTH_R7 0x07
 
 #define SIZE_SD_CMD 0x06
@@ -21,6 +23,7 @@ const uint8_t CMD55[SIZE_SD_CMD] ={0x77, 0x00, 0x00, 0x00, 0x00, 0x65};
 const uint8_t CMD41[SIZE_SD_CMD] = {0x69, 0x40, 0x00, 0x00, 0x00, 0x77};
 const uint8_t CMD58[SIZE_SD_CMD] = {0x7A, 0x00, 0x00, 0x00, 0x00, 0x75};
 uint8_t RxBuffer[RXBUFSIZE];
+uint8_t SDReadBuffer[SIZE_SD_RD];
 
 void spiInit( void ) {
 	/* Switch to 8MHz clock (disable prescaler) */
@@ -125,6 +128,7 @@ uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff 
 			receive_buff[i] = temp;
 			myprintf(" %x", temp);
 		}
+		break;
 		default :
 		myprintf("\n Error in CMD");
 	}
@@ -173,7 +177,6 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
 	temp = spiSend(temp);
 	myprintf(" %x", temp);
 
-	myprintf("\n Reading Data:");
 	if (temp != 0x00) {
 		myprintf("\nError in CMD17 ... Retrying");
 		rcvr_datablock(send_buff, lba, receive_buff, bs);
@@ -233,13 +236,13 @@ void initSD() {
 	}
 	myprintf("\nCard Ready");
 
-	spiXchg(CMD58, SIZE_SD_CMD, RxBuffer);
-	if(RxBuffer[3] & 0x40){
-		myprintf("High Capacity Card \n");
-	}
-	else{
-		myprintf("Standard Capacity Card \n");
-	}
+	// spiXchg(CMD58, SIZE_SD_CMD, RxBuffer);
+	// if(RxBuffer[3] & 0x40){
+	// 	myprintf("\n High Capacity Card");
+	// }
+	// else{
+	// 	myprintf("\n Standard Capacity Card");
+	// }
 }
 
 int main(void)
@@ -253,7 +256,7 @@ int main(void)
 	myprintf("\nStart Communication");
 	initSD();
 	myprintf("\nSD Card Initialized");
-	rcvr_datablock(CMD17, 0x00000000, RxBuffer, 512);
+	rcvr_datablock(CMD17, 0, SDReadBuffer, SIZE_SD_RD);
 	myprintf("\nDone");
 }
 
