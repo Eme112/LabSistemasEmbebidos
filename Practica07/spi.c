@@ -118,6 +118,12 @@ uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff 
 			myprintf(" %x", temp);
 		}
 		break;
+		case kCMD58 :
+		for (i=0; i<LENGTH_R3; i++) {
+			temp = spiSend(0xFF);
+			receive_buff[i] = temp;
+			myprintf(" %x", temp);
+		}
 		default :
 		myprintf("\n Error in CMD");
 	}
@@ -173,7 +179,7 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
 	}
 
 	// Reading to find the beginning of the sector
-	myprintf("\n Waiting for the beginning of the sector:")
+	myprintf("\n Waiting for the beginning of the sector:");
 	temp = spiSend(0xFF);
 	while(temp != 0xFE){
 		temp = spiSend(0xFF);
