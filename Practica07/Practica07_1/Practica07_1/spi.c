@@ -2,14 +2,17 @@
 #include "myprintf.h"
 #include "spi.h"
 
-#define RXBUFSIZE 0x400
+#define RXBUFSIZE 0x07
+#define SIZE_SD_RD 512
 #define LENGTH_R1 0x03
+#define LENGTH_R3 0x05
 #define LENGTH_R7 0x07
 
 #define SIZE_SD_CMD 0x06
 #define kCMD00 0x40
 #define kCMD08 0x48
 #define kCMD55 0x77
+#define kCMD58 0x7A
 #define kCMD41 0x69
 const uint8_t CMD00[SIZE_SD_CMD] ={0x40, 0x00, 0x00, 0x00, 0x00, 0x95};
 const uint8_t CMD08[SIZE_SD_CMD] ={0x48, 0x00, 0x00, 0x01, 0xAA, 0x87};
@@ -18,7 +21,9 @@ uint8_t CMD172[SIZE_SD_CMD] ={0x51, 0x00, 0x00, 0x08, 0x00, 0x01};
 const uint8_t CMD18[SIZE_SD_CMD] ={0x52, 0x00, 0x00, 0x00, 0x00, 0x01};
 const uint8_t CMD55[SIZE_SD_CMD] ={0x77, 0x00, 0x00, 0x00, 0x00, 0x65};
 const uint8_t CMD41[SIZE_SD_CMD] = {0x69, 0x40, 0x00, 0x00, 0x00, 0x77};
+const uint8_t CMD58[SIZE_SD_CMD] = {0x7A, 0x00, 0x00, 0x00, 0x00, 0x75};
 uint8_t RxBuffer[RXBUFSIZE];
+uint8_t SDReadBuffer[SIZE_SD_RD];
 
 void spiInit( void ) {
 	/* Switch to 8MHz clock (disable prescaler) */
@@ -117,6 +122,13 @@ uint32_t spiXchg(const uint8_t * send_buff, uint32_t bc, uint8_t * receive_buff 
 			myprintf(" %x", temp);
 		}
 		break;
+		case kCMD58 :
+		for (i=0; i<LENGTH_R3; i++) {
+			temp = spiSend(0xFF);
+			receive_buff[i] = temp;
+			myprintf(" %x", temp);
+		}
+		break;
 		default :
 		myprintf("\n Error in CMD");
 	}
@@ -168,16 +180,20 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
 	if (temp != 0x00) {
 		myprintf("\nError in CMD17 ... Retrying");
 		rcvr_datablock(send_buff, lba, receive_buff, bs);
+		return;
 	}
 
 	// Reading to find the beginning of the sector
+	myprintf("\n Waiting for the beginning of the sector:");
 	temp = spiSend(0xFF);
 	while(temp != 0xFE){
 		temp = spiSend(0xFF);
 		myprintf(" %x", temp);
 	}
 	// Receiving the memory sector/block
+	myprintf("\n Reading Data:");
 	myprintf("\n\n");
+	int count = 0;
 	for(i=0; i< bs; i++) {
 		while(SERCOM1->SPI.INTFLAG.bit.DRE == 0);
 		SERCOM1->SPI.DATA.reg = 0xFF;
@@ -185,7 +201,12 @@ void rcvr_datablock(const uint8_t * send_buff, uint32_t lba, uint8_t * receive_b
 		while(SERCOM1->SPI.INTFLAG.bit.RXC == 0);
 		temp = SERCOM1->SPI.DATA.reg;
 		*(receive_buff++) = temp;
+		count++;
 		myprintf(" %x", temp);
+		if(count > 55) {
+			count = 0;
+			myprintf("\n");
+		}
 	}
 	REG_PORT_OUTSET0 = PORT_PA18;
 	myprintf("\n\n");
@@ -221,6 +242,14 @@ void initSD() {
 		myprintf("\nCard not ready");
 	}
 	myprintf("\nCard Ready");
+
+	// spiXchg(CMD58, SIZE_SD_CMD, RxBuffer);
+	// if(RxBuffer[3] & 0x40){
+	// 	myprintf("\n High Capacity Card");
+	// }
+	// else{
+	// 	myprintf("\n Standard Capacity Card");
+	// }
 }
 
 int main(void)
@@ -234,7 +263,7 @@ int main(void)
 	myprintf("\nStart Communication");
 	initSD();
 	myprintf("\nSD Card Initialized");
-	rcvr_datablock(CMD17, 0x00000000, RxBuffer, 512);
+	rcvr_datablock(CMD17, 0, SDReadBuffer, SIZE_SD_RD);
 	myprintf("\nDone");
 }
 
